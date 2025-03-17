@@ -8,16 +8,26 @@ if [ -z "$1" ]; then
 fi
 
 FILE_EXTENSION="$1"
+
+# Validate the file extension early
+if ! [[ "$FILE_EXTENSION" =~ ^(c|cpp)$ ]]; then
+    echo "Invalid language specified. Use 'c' or 'cpp'."
+    exit 1
+fi
+
 CODE_FILE="/usr/src/app/cpp-engine/app/main.${FILE_EXTENSION}"
+
+# Check if the code file exists
+if [ ! -f "$CODE_FILE" ]; then
+    echo "Error: Code file not found: $CODE_FILE"
+    exit 1
+fi
 
 
 if [ "$FILE_EXTENSION" == "c" ]; then
     clang -o output_program "$CODE_FILE" 2> compile_error.txt
 elif [ "$FILE_EXTENSION" == "cpp" ]; then
     clang++ -o output_program "$CODE_FILE" 2> compile_error.txt
-else
-    echo "Invalid language specified. Use 'c' or 'cpp'."
-    exit 1
 fi
 
 # Check if there were any compilation errors
@@ -30,9 +40,10 @@ fi
 # Remove the initial execution and runtime error checks. The redirection part handles execution.
 
 # start
-if [ -f "/usr/src/app/cpp-engine/app/input.txt" ]; then
+INPUT_FILE="/usr/src/app/cpp-engine/app/input.txt"
+if [ -f "$INPUT_FILE" ]; then
     # Run the compiled program with input redirection
-    ./output_program < /usr/src/app/cpp-engine/app/input.txt > output.txt 2> runtime_error.txt
+    ./output_program < "$INPUT_FILE" > output.txt 2> runtime_error.txt
     RUNTIME_STATUS=$?
 else
     # Run the compiled program without input redirection
@@ -45,6 +56,12 @@ fi
 if [ $RUNTIME_STATUS -ne 0 ]; then
     echo -e "Runtime error!\n"
     cat runtime_error.txt
+    exit 1
+fi
+
+# Check if output.txt exists before attempting to cat it
+if [ ! -f "output.txt" ]; then
+    echo "Error: output.txt not found after execution."
     exit 1
 fi
 
