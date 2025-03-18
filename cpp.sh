@@ -22,16 +22,6 @@ if [ $? -ne 0 ]; then
     cat compile_error.txt
     exit 1
 fi
-# Run the compiled program and capture runtime errors
-./output_program > output.txt 2> runtime_error.txt
-
-# Check if there were any runtime errors
-if [ $? -ne 0 ]; then
-    echo -e "Runtime error!\n"
-    cat runtime_error.txt
-    exit 1
-
-fi
 # start
 if [ -f "/usr/src/app/cpp-engine/app/input.txt" ]; then
     # Run the compiled program with input redirection
